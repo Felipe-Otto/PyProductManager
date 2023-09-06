@@ -1,16 +1,7 @@
 
-Ver por que o CTK Top Level não está funcionando
 
 adicionar icones ans janelas
 
 terminar o REad ME
 
-A gente precisa rever aquele metodo de confrimar credenciais e ver se tem alguma amenira de voltar valores na função comand de botões
-
-Convenções Especiais:
-Métodos especiais, como construtores (__init__) e destrutores (__del__), têm nomes predefinidos que você deve seguir.
-Métodos que são destinados a serem chamados diretamente pelo usuário devem começar com um único sublinhado,
-como _metodo_privado(). No entanto, eles ainda são acessíveis de fora da classe.
-Métodos que são considerados privados devem começar com dois sublinhados, como __metodo_privado().
-Isso faz com que o nome seja "name mangling," mas eles ainda podem ser acessados.
 

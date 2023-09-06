@@ -7,7 +7,8 @@ class ProductDAO:
     def __init__(self):
         pass
 
-    def define_key(self):
+    @staticmethod
+    def define_key():
         try:
             query = f'SELECT MAX(ProductKey) ' \
                     f'FROM Product;'
@@ -47,24 +48,23 @@ class ProductDAO:
     def update_product(product):
         try:
             query = f'UPDATE  Product ' \
-                    f'SET ProductName = \'{product.get_product_name()}\', ' \
-                    f'    ProductDescription = \'{product.get_product_description()}\', ' \
-                    f'    ProductPrice = {product.get_product_price()} ' \
-                    f'WHERE ProductKey = {product.get_product_key()};'
+                    f'SET ProductName = \'{product.product_name}\', ' \
+                    f'    ProductDescription = \'{product.product_description}\', ' \
+                    f'    ProductPrice = {product.product_price} ' \
+                    f'WHERE ProductKey = {product.product_key};'
             with SQLite3DatabaseConnection() as cursor:
                 cursor.execute(query)
                 cursor.commit()
         except Exception as e:
             print(f'Error while trying to update data from \033[1;31mProduct\033[0m:\n{e}')
-            print(product.get_product_key())
 
     @staticmethod
     def insert_product(product):
         product_key = ProductDAO.define_key()
         try:
             query = f'INSERT INTO Product (ProductKey, ProductName, ProductDescription, ProductPrice) ' \
-                    f'VALUES ({product_key}, \'{product.get_product_name()}\', ' \
-                    f'    \'{product.get_product_description()}\', {product.get_product_price()});'
+                    f'VALUES ({product_key}, \'{product.product_name}\', ' \
+                    f'    \'{product.product_description}\', {product.product_price});'
             with SQLite3DatabaseConnection() as cursor:
                 cursor.execute(query)
                 cursor.commit()

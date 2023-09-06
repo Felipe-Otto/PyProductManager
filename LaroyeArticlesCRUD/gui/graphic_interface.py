@@ -8,6 +8,10 @@ from styles.styles import *
 
 # Function that creates login window
 def login_window():
+    """
+    Generates the login window where users enter their credentials (username and password) that gets verified to continue
+     with the program.
+    """
     # Defining window properties
     window_properties = {'width': 450, 'height': 250, 'id': 'Login'}
 
@@ -39,23 +43,91 @@ def login_window():
 
     # Creating Screen Buttons
     sing_up_button = CTkButton(login_window, text='Sign Up', font=BUTTON_FONT, width=125, height=32,
-                               command=login_window.destroy,
-                               fg_color=MEDIUM_GRAY_COLOR, hover_color='green')
+                               fg_color=MEDIUM_GRAY_COLOR,
+                               hover_color='green', command=lambda: singup_window(login_window),
+                               )
     sing_up_button.place(x=50, y=195)
 
     sing_in_button = CTkButton(login_window, text='Sign In', font=BUTTON_FONT, width=125, height=32,
-                               fg_color=MEDIUM_GRAY_COLOR,
-                               hover_color='green', command=lambda: handling_input(login_window,
-                                                                                   {'username': username_entry.get(),
-                                                                                    'password': password_entry.get()}))
+                               fg_color=MEDIUM_GRAY_COLOR, hover_color='green',
+                               command=lambda: verify_credentials(login_window,
+                                                                  {'username': username_entry.get(),
+                                                                   'password': password_entry.get()}))
     sing_in_button.place(x=275, y=195)
 
     # Starting Screen
     login_window.mainloop()
 
 
-# Function that creates main window
+def singup_window(window):
+    """
+    Args:
+        window (CTk): Login window
+    Return:
+        None
+    """
+
+    # Defining window properties
+    window_properties = {'width': 450, 'height': 300, 'id': 'Sign up'}
+
+    # Function That Creates Window
+    signup_window = create_window(window_properties, window)
+
+    # Defining Images Icon For The Register Product (30px)
+    user_icon = CTkImage(dark_image=Image.open('../images/user_icon.png'), size=(30, 30))
+    password_icon = CTkImage(dark_image=Image.open('../images/password_icon.png'), size=(30, 30))
+
+    # Crating Window Labels
+    title_label = CTkLabel(signup_window, text='Sign Up Screen', font=TITTLE_FONT, width=window_properties['width'])
+    title_label.grid(row=0, column=0, columnspan=3, pady=(10, 30), sticky='ew')
+
+    # Positioning Icons On The Window
+    user_icon_label = CTkLabel(signup_window, image=user_icon, text='')
+    user_icon_label.grid(row=1, column=0, sticky='ew', padx=(0, 55))
+
+    password_icon_label = CTkLabel(signup_window, image=password_icon, text='')
+    password_icon_label.grid(row=2, column=0, sticky='ew', padx=(0, 55), pady=(20, 5))
+
+    password_icon_label = CTkLabel(signup_window, image=password_icon, text='')
+    password_icon_label.grid(row=3, column=0, sticky='ew', padx=(0, 55), pady=(20, 5))
+
+    # Positioning Window Entries
+    username_entry = CTkEntry(signup_window, font=ENTRIES_FONT, width=200, height=32, placeholder_text='Username')
+    username_entry.grid(row=1, column=0, columnspan=4, sticky='we', padx=(100, 70))
+
+    password_entry = CTkEntry(signup_window, font=ENTRIES_FONT, width=200, height=32, placeholder_text='Password',
+                              show='•')
+    password_entry.grid(row=2, column=0, columnspan=4, sticky='we', padx=(100, 70), pady=(20, 5))
+
+    confirm_password_entry = CTkEntry(signup_window, font=ENTRIES_FONT, width=200, height=32,
+                                      placeholder_text='Confirm password',
+                                      show='•')
+    confirm_password_entry.grid(row=3, column=0, columnspan=4, sticky='we', padx=(100, 70), pady=(20, 5))
+
+    # Creating Screen Buttons
+    singup_button = CTkButton(signup_window, text='Create user', font=BUTTON_FONT, width=125, height=32,
+                              fg_color=MEDIUM_GRAY_COLOR, hover_color='green',
+                              command=lambda: verify_credentials(signup_window, {'username': username_entry.get(),
+                                                                                 'password': password_entry.get(),
+                                                                                 'confirm': confirm_password_entry.get()}))
+
+    singup_button.place(x=150, y=250)
+
+    # Overlaying Window
+    signup_window.grab_set()
+
+    # Function that creates main window
+
+
 def main_window():
+    """
+    Generates the main window where users can manage products registered
+
+    Args:
+        None
+    Returns:
+        None
+    """
     # Defining window properties
     window_properties = {'width': 1100, 'height': 715, 'id': 'Menu'}
 
@@ -150,9 +222,10 @@ def main_window():
     treeview.bind('<Double-1>', lambda event: editor_window(main_window, treeview))
 
     # Adding Typing Recognizer Event On Product Name Filter Field
-    product_name_filter_entry.bind('<KeyRelease>', lambda event: filter_treeview({'name': product_name_filter_entry.get(),
-                                                                                  'description': product_description_filter_entry.get()},
-                                                                                 treeview))
+    product_name_filter_entry.bind('<KeyRelease>',
+                                   lambda event: filter_treeview({'name': product_name_filter_entry.get(),
+                                                                  'description': product_description_filter_entry.get()},
+                                                                 treeview))
 
     # Adding Typing Recognizer Event On Product Description Filter Field
     product_description_filter_entry.bind('<KeyRelease>',
@@ -174,13 +247,22 @@ def main_window():
     main_window.mainloop()
 
 
-# Function that creates product editor window
-def editor_window(main_window, treeview):
+def editor_window(window, treeview):
+    """
+    Generates the editor window where users can edit products
+
+    Args:
+        window (CTK): Main window.
+        treeview (Tkinter.ttk.Treeview, optional): Treeview that will be repopulated.
+    Returns:
+        None
+
+    """
     # Defining window properties
     window_properties = {'width': 450, 'height': 301, 'id': 'Editor'}
 
     # Function That Creates Window
-    editor_window = create_window(window_properties, preceding=main_window)
+    editor_window = create_window(window_properties, preceding=window)
 
     # Defining Images Icon For The Register Product (30px)
     product_icon = CTkImage(dark_image=Image.open('../images/product_icon.png'), size=(30, 30))
@@ -201,7 +283,6 @@ def editor_window(main_window, treeview):
     description_icon_label = CTkLabel(editor_window, image=description_icon, text='')
     description_icon_label.grid(row=3, column=0, sticky='ew', padx=(0, 55), pady=(0, 10))
 
-    # A Sla Nego
     # Obtaining Selected Row In Treeview
     selected_row_product = treeview.selection()
     # Obtaining Values From Selected Row
@@ -242,6 +323,16 @@ def editor_window(main_window, treeview):
 
 # Function that creates confirm delete window
 def confirmation_window(window, product_id, treeview):
+    """
+    Generates the confirmation deletion window that always appears after a delete command.
+
+    Args:
+        window (CTK): Main window.
+        product_id (int): ID of the selected product to be excluded.
+        treeview (Tkinter.ttk.Treeview, optional): Treeview that will be repopulated.
+    Returns:
+        None
+    """
     # Defining window properties
     window_properties = {'width': 300, 'height': 170, 'id': 'Deleter'}
 
@@ -277,13 +368,22 @@ def confirmation_window(window, product_id, treeview):
     confirmation_window.grab_set()
 
 
-# Function that creates product register window
-def register_window(main_window, treeview):
+def register_window(window, treeview):
+    """
+    Generates the register window where users can insert new products
+
+    Args:
+        window (CTK): Main window.
+        treeview (Tkinter.ttk.Treeview, optional): Treeview that will be repopulated.
+    Returns:
+        None
+    """
+
     # Defining window properties
     window_properties = {'width': 450, 'height': 301, 'id': 'Register'}
 
     # Function That Creates Window
-    register_window = create_window(window_properties, preceding=main_window)
+    register_window = create_window(window_properties, preceding=window)
 
     # Defining Images Icon For The Register Product (30px)
     product_icon = CTkImage(dark_image=Image.open('../images/product_icon.png'), size=(30, 30))
@@ -339,18 +439,26 @@ def register_window(main_window, treeview):
     # Overlaying Window
     register_window.grab_set()
 
-    # Function that verifies if any product has been selected on the main window to be excluded
 
+def confirmation(window, selected_product, treeview):
+    """
+    Verifies if any product has been selected on the main window to be excluded
 
-def confirmation(main_window, selected_product, treeview):
-    # Confirming if any row was selected in the main
-    if selected_product == '':
+    Args:
+        window (CTK): Main window.
+        selected_product (list): List of properties for the selected product to be deleted.
+        treeview (Tkinter.ttk.Treeview, optional): Treeview that will be repopulated.
+    Returns:
+        None
+    """
+    # Confirming if any product was selected in the main
+    if not selected_product:
         message_properties = {'text': 'Please Select Any Product', 'row': 4, 'column': 5, 'columnspan': 9,
                               'pady': 15, 'text_color': '#A94228'}
         # Positioning Warning On The Window
-        generate_message(main_window, message_properties, temporary=True)
+        generate_message(window, message_properties, temporary=True)
     else:
-        confirmation_window(main_window, selected_product[0], treeview)
+        confirmation_window(window, selected_product[0], treeview)
 
 
 def verify_credentials(window, properties):
@@ -358,24 +466,25 @@ def verify_credentials(window, properties):
     Checks credentials authenticity on database.
 
     Args:
-        window: Login window.
+        window (CTk): Login window.
         properties (dict): Specifications of the login.
             - username (str): Username entered that will be checked.
             - password (str): Password entered that will be checked.
+            - confirm (str, optional): Password confirmation that will be checked
     Returns:
         True
     """
-
-    # Checking credentials on database
-    approval = UserDAO().select_user_by_key(properties['username'], properties['password'])
-
-    if approval:
-        # Destroying Login Window
-        window.destroy()
-        # Create Menu Window
-        main_window()
-    else:
-        # Defining message properties and positioning it
-        message_properties = {'text': 'Username Or Password Is Incorrect',
-                              'row': 3, 'column': 0, 'columnspan': 3, 'pady': 0, 'text_color': RED_COLOR}
-        generate_message(window, message_properties)
+    user = handling_input(window, properties)
+    if user:
+        # Checking credentials on database
+        approval = UserDAO().select_user_credentials(user)
+        if approval:
+            # Destroying Login Window
+            window.destroy()
+            # Create Menu Window
+            main_window()
+        else:
+            # Defining message properties and positioning it
+            message_properties = {'text': 'Username Or Password Is Incorrect',
+                                  'row': 3, 'column': 0, 'columnspan': 3, 'pady': 0, 'text_color': RED_COLOR}
+            generate_message(window, message_properties)

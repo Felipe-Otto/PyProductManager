@@ -1,13 +1,14 @@
 # Importing necessary libraries
 from customtkinter import CTkToplevel, CTkLabel, CTk
 
+from model.user import User
 from styles.styles import DARK_GRAY_COLOR, RED_COLOR, GREEN_COLOR, MESSAGE_FONT
 from model.product import Product
 from dao.product_dao import ProductDAO
 from dao.user_dao import UserDAO
 
-# Dictionary o save windows identifier
-window_identifier = {'Login': None, 'Menu': None, 'Register': None, 'Deleter': None, 'Editor': None}
+# Dictionary that saves windows identifier
+window_identifier = {'Login': None, 'Sign up': None, 'Menu': None, 'Register': None, 'Deleter': None, 'Editor': None}
 
 
 def create_window(properties, preceding=None):
@@ -26,6 +27,9 @@ def create_window(properties, preceding=None):
 
     # Creating Window
     window = CTkToplevel(preceding) if preceding else CTk()
+
+    # Setting window title
+    window.title(properties['id'])
 
     # Storing window identifier
     window_identifier[properties['id']] = window.winfo_id()
@@ -46,9 +50,6 @@ def create_window(properties, preceding=None):
 
     # Returning window
     return window
-
-
-
 
 
 def generate_message(window, properties, temporary=False):
@@ -86,7 +87,7 @@ def populate_treeview(treeview, enable_filter=False, query=None):
     Args:
         treeview (Tkinter.ttk.Treeview): Treeview that will be populate with data.
         enable_filter (bool, optional): Determines whether the listing should be done with filter. If is set to True,
-                                       query variable will be used as a parameter for the listing.
+                                        query variable will be used as a parameter for the listing.
         query (str, optional): Query used for listing.
     Returns:
         treeview (Tkinter.ttk.Treeview): Treeview populated with product data.
@@ -122,15 +123,16 @@ def clear_treeview(treeview):
     return treeview
 
 
-def handling_input(window, login=None, product=None, treeview=None):
+def handling_input(window, user=None, product=None, treeview=None):
     """
     Treats the entries values, avoiding data non-standardization
 
     Args:
         window (CTk): Window open during entries values (Login, Register or Editor).
-        login (dict, optional): Login values entered
+        user (dict, optional): Login values entered
             - username (str): Username value entered
             - password (str): Password value entered
+            - confirm (str, optional): Password confirmation value entered
         product (dict, optional): Product values entered
             - id (int, optional): Product identifier value
             - name (str): Product name value
@@ -138,7 +140,7 @@ def handling_input(window, login=None, product=None, treeview=None):
             - price (str): Product price value
         treeview (Tkinter.ttk.Treeview, optional): Treeview that will be repopulated.
     Returns:
-        None
+        user (User): User object to check credentials
     """
 
     # Treating login values entered
@@ -146,23 +148,57 @@ def handling_input(window, login=None, product=None, treeview=None):
         # Defining the foundation of message properties
         message_properties = {'row': 3, 'column': 0, 'columnspan': 3, 'pady': 0, 'text_color': RED_COLOR}
         # Checking if login username and password fields are empty
-        if not login['username'] and not login['password']:
+        if not user['username'] and not user['password']:
             # Defining message text and positioning it
             message_properties['text'] = 'Please fill in the fields above'
             generate_message(window, message_properties)
         # Checking if login username field is empty
-        elif not login['username']:
+        elif not user['username']:
             # Defining message text and positioning it
             message_properties['text'] = 'Please fill in the username field'
             generate_message(window, message_properties)
         # Checking if login password field is empty
-        elif not login['password']:
+        elif not user['password']:
             # Defining message text and positioning it
             message_properties['text'] = 'Please fill in password field'
             generate_message(window, message_properties)
         else:
-            verify_credentials(window, login)
-    # Treating product values entered
+            # Creating an user object
+            user = User(None, user['username'], user['password'])
+            return user
+    # Treating sing-up values entered
+    elif window.winfo_id() == window_identifier['Sign up']:
+        # Defining the foundation of message properties
+        message_properties = {'row': 4, 'column': 0, 'columnspan': 3, 'pady': 0, 'text_color': RED_COLOR}
+        # Checking if sign-up username password and confirm password fields are empty
+        if not user['username'] and not user['password'] and not user['confirm']:
+            # Defining message text and positioning it
+            message_properties['text'] = 'Please fill in the fields above'
+            generate_message(window, message_properties)
+        # Checking if sign-up username field is empty
+        elif not user['username']:
+            # Defining message text and positioning it
+            message_properties['text'] = 'Please fill in the username field'
+            generate_message(window, message_properties)
+        # Checking if sign-up password field is empty
+        elif not user['password']:
+            # Defining message text and positioning it
+            message_properties['text'] = 'Please fill in password field'
+            generate_message(window, message_properties)
+        # Checking if sign-up confirm password field is empty
+        elif not user['confirm']:
+            # Defining message text and positioning it
+            message_properties['text'] = 'Please fill in confirm password field'
+            generate_message(window, message_properties)
+        # Checking if the sign-up password matches the typed confirmation.
+        elif user['confirm'] != user['password']:
+            # Defining message text and positioning it
+            message_properties['text'] = 'Password does not match the confirmation'
+            generate_message(window, message_properties)
+        else:
+            # Creating an user object
+            user = User(None, user['username'], user['password'])
+            insert_user(window, user)
     else:
         # Defining the foundation of message properties
         message_properties = {'row': 4, 'column': 0, 'columnspan': 4, 'pady': 0, 'text_color': RED_COLOR}
@@ -197,6 +233,35 @@ def handling_input(window, login=None, product=None, treeview=None):
                 insert_product(window, product, treeview)
             else:
                 update_product(window, product, treeview)
+
+
+def insert_user(window, user):
+    """
+    Checks if user already registered and insert into databse
+
+    Args:
+        window (CTk): Sign Up window.
+        user (User): Specification of the user
+            - name (str): User name entered that will be checked for insert.
+            - password (str): User password entered that will be inserted.
+    Returns:
+        None
+    """
+    # Defining the foundation of message properties
+    message_properties = {'row': 4, 'column': 0, 'columnspan': 3, 'pady': 0}
+    # Checking existence of the product on the database
+    if UserDAO().select_user_by_key(user.user_name):
+        # Defining the rest of the message properties and positioning it
+        message_properties.update({'text': 'Username already in use', 'text_color': RED_COLOR})
+        generate_message(window, message_properties)
+    else:
+        # Inserting user on database
+        UserDAO().insert_user(user)
+        # Defining the rest of the message properties and positioning it
+        message_properties.update({'text': 'User successfully registered', 'text_color': GREEN_COLOR})
+        generate_message(window, message_properties)
+        # Closing window after 1.5 s of the 'Create user' button being pressed
+        window.after(1500, window.destroy)
 
 
 def insert_product(window, product, treeview):
